@@ -1,76 +1,85 @@
-const User = require("../models/User");
-const bcrypt = require("bcrypt");
+const { User } = require('../models');
+const bcrypt = require('bcryptjs');
 
 module.exports = {
+  
   async create(req, res) {
     try {
       const { name, email, password } = req.body;
-
-      if (!name || !email || !password) {
-        return res.status(400).json({ message: "Dados obrigatórios faltando" });
-      }
-
-      const userExists = await User.findOne({ where: { email } });
-      if (userExists) {
-        return res.status(409).json({ message: "Usuário já existe" });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
+      const password_hash = await bcrypt.hash(password, 8);
 
       const user = await User.create({
         name,
         email,
-        password: hashedPassword,
+        password_hash,
       });
 
+      user.password_hash = undefined;
       return res.status(201).json(user);
     } catch (error) {
-      return res.status(500).json({ message: "Erro ao criar usuário" });
+      return res.status(400).json({ error: "Erro ao criar usuário", details: error.message });
     }
   },
 
+ 
   async list(req, res) {
-    const users = await User.findAll({
-      attributes: { exclude: ["password"] },
-    });
-    return res.json(users);
+    try {
+      const users = await User.findAll({
+        attributes: ['id', 'name', 'email', 'createdAt', 'updatedAt']
+      });
+      return res.status(200).json(users);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
+    }
   },
 
+ 
   async findById(req, res) {
-    const { id } = req.params;
-    const user = await User.findByPk(id, {
-      attributes: { exclude: ["password"] },
-    });
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuário não encontrado" });
+    try {
+      const { id } = req.params;
+      const user = await User.findByPk(id, {
+        attributes: ['id', 'name', 'email']
+      });
+      if (!user) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      return res.status(200).json(user);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
-
-    return res.json(user);
   },
 
+  
   async update(req, res) {
-    const { id } = req.params;
-    const { name, email } = req.body;
+    try {
+      const { id } = req.params;
+      const { name, email } = req.body; 
 
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ message: "Usuário não encontrado" });
+      const [updated] = await User.update({ name, email }, { where: { id: id } });
+
+      if (!updated) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      
+      const updatedUser = await User.findByPk(id, { attributes: ['id', 'name', 'email'] });
+      return res.status(200).json(updatedUser);
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
-
-    await user.update({ name, email });
-    return res.json(user);
   },
 
+  
   async delete(req, res) {
-    const { id } = req.params;
+    try {
+      const { id } = req.params;
+      const deleted = await User.destroy({ where: { id: id } });
 
-    const user = await User.findByPk(id);
-    if (!user) {
-      return res.status(404).json({ message: "Usuário não encontrado" });
+      if (!deleted) {
+        return res.status(404).json({ error: "Usuário não encontrado" });
+      }
+      return res.status(204).send();
+    } catch (error) {
+      return res.status(500).json({ error: "Erro interno do servidor" });
     }
-
-    await user.destroy();
-    return res.status(204).send();
-  },
+  }
 };

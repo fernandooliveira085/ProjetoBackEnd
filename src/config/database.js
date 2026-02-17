@@ -1,19 +1,30 @@
-// Em seu arquivo de configuração de banco de dados (ex: config/database.js)
 
-require('dotenv').config(); // Carrega as variáveis de ambiente
-const { Sequelize } = require('sequelize');
 
-// Cria a instância do Sequelize usando as variáveis do arquivo .env
-const sequelize = new Sequelize(
-  process.env.DB_NAME,    // Nome do banco
-  process.env.DB_USER,    // Usuário
-  process.env.DB_PASS,    // Senha
-  {
-    host: process.env.DB_HOST,      // Host
-    dialect: process.env.DB_DIALECT,  // Dialeto (mysql)
-    logging: false
-  }
-);
+require('dotenv').config();
 
-// Exporta a instância CORRETA e configurada
-module.exports = sequelize;
+module.exports = {
+  
+  development: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME,
+    host: process.env.DB_HOST,
+    dialect: 'mysql', 
+  },
+  
+  test: {
+    username: process.env.DB_USER,
+    password: process.env.DB_PASS,
+    database: process.env.DB_NAME_TEST, 
+    host: process.env.DB_HOST,
+    dialect: 'mysql',
+  },
+  
+  production: {
+    username: process.env.DB_PROD_USER,
+    password: process.env.DB_PROD_PASS,
+    database: process.env.DB_PROD_NAME,
+    host: process.env.DB_PROD_HOST,
+    dialect: 'mysql',
+  },
+};

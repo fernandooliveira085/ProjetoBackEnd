@@ -8,7 +8,6 @@ beforeAll(async () => {
   process.env.NODE_ENV = "test";
   await sequelize.sync({ force: true });
 
-  // cria usuário
   await request(app)
     .post("/users")
     .send({
@@ -17,7 +16,7 @@ beforeAll(async () => {
       password: "123456",
     });
 
-  // faz login
+
   const login = await request(app)
     .post("/login")
     .send({

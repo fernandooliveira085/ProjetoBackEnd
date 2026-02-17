@@ -1,28 +1,28 @@
 const { Sequelize } = require("sequelize");
+const User = require('./User');
+const dbConfig = require('../config/database'); 
+
+const models = [User];
+
+const env = process.env.NODE_ENV || 'development';
+const config = dbConfig[env]; 
 
 let sequelize;
 
-if (process.env.NODE_ENV === "test") {
-  // banco em memória para testes
-  sequelize = new Sequelize({
-    dialect: "sqlite",
-    storage: ":memory:",
-    logging: false,
-  });
+if (config.use_env_variable) {
+  
+  sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
-  // banco real (mysql)
-  sequelize = new Sequelize(
-    process.env.DB_NAME,
-    process.env.DB_USER,
-    process.env.DB_PASS,
-    {
-      host: process.env.DB_HOST,
-      dialect: "mysql",
-      logging: false,
-    }
-  );
+  
+  sequelize = new Sequelize(config.database, config.username, config.password, config);
 }
 
-module.exports = {
+models.forEach(model => model.init(sequelize));
+
+const db = {
+  ...sequelize.models,
   sequelize,
+  Sequelize,
 };
+
+module.exports = db;

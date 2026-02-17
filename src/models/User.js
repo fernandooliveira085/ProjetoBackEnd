@@ -1,16 +1,27 @@
-const bcrypt = require("bcryptjs");
 
-module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define("User", {
-    firstname: DataTypes.STRING,
-    surname: DataTypes.STRING,
-    email: DataTypes.STRING,
-    password: DataTypes.STRING,
-  });
+const { Model, DataTypes } = require('sequelize');
+const bcrypt = require('bcryptjs');
 
-  User.beforeCreate(async (user) => {
-    user.password = await bcrypt.hash(user.password, 8);
-  });
+class User extends Model {
+  static init(sequelize) {
+    super.init(
+      {
+        name: DataTypes.STRING,
+        email: DataTypes.STRING,
+        password_hash: DataTypes.STRING,
+      },
+      {
+        sequelize,
+        modelName: 'User',
+        tableName: 'users',
+      }
+    );
+  }
 
-  return User;
-};
+  
+  checkPassword(password) {
+    return bcrypt.compare(password, this.password_hash);
+  }
+}
+
+module.exports = User;
