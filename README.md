@@ -64,7 +64,7 @@ src/
 Clone o repositório:
 
 ```bash
-git clone <url-do-repositorio>
+git clone https://github.com/fernandooliveira085/ProjetoBackEnd.git
 ```
 
 Entre na pasta:
